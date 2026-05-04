@@ -38,22 +38,29 @@ AMINOACIDSEQUENCE
   .maf
 
 ## Usage
+The program uses the provided command-line arguments to decide whether to run in training or prediction mode.
+
+- If `--db` is provided, the program runs in training mode.
+- Otherwise, the program runs in prediction mode.
+- Prediction requires exactly one of `--seq` or `--maf`.
 
 ### Train a Model
 ```bash
-java -jar train.jar --db <seclib-file> --method gor4 --model <output-model-file>
+java -jar gor4.jar --db <seclib-file> --method gor4 --model <model-file>
 ```
 ### Predict from FASTA
 ```bash
-java -jar predict.jar --model <model-file> --format txt --seq <fasta-file>
+java -jar gor4.jar --model <model-file> --format txt --seq <fasta-file>
 ```
+
 ### Predict from Multiple Alignments
 ```bash
-java -jar predict.jar --model <model-file> --format txt --maf <alignment-folder>
+java -jar gor4.jar --model <model-file> --format txt --maf <alignment-folder>
 ```
+
 ### Enable Probability Output
 ```bash
-java -jar predict.jar --probabilities --model <model-file> --format txt --seq data/example.fasta
+java -jar gor4.jar --probabilities --model <model-file> --format txt --seq data/example.fasta
 ```
 
 ## Output Format
