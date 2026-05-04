@@ -79,8 +79,6 @@ Higher values indicate higher confidence
 
 ## How It Works
 
-## How It Works
-
 ### Training
 
 - Reads labeled protein sequences
