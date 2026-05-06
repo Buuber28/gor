@@ -25,20 +25,6 @@ The cross-validation workflow consists of two steps:
 
 ---
 
-# Repository Contents
-
-```text
-.
-├── TrainSetCreator.jar
-├── CrossValidationRunner.jar
-├── src/
-├── examples/
-├── folds/
-└── README.md
-```
-
----
-
 # TrainSetCreator
 
 `TrainSetCreator` creates reproducible k-fold train/test splits from a Seclib dataset.
