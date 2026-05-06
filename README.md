@@ -1,21 +1,43 @@
-# GOR IV 
+# GOR IV Protein Secondary Structure Prediction Pipeline
 
-Java-based implementation of a GOR IV protein secondary structure prediction pipeline.  
-The project provides an end-to-end workflow for training, prediction, and validation, including support for FASTA input, multiple sequence alignments (GOR V), and optional probability outputs.
+Java-based implementation of a GOR IV protein secondary structure prediction pipeline.
+
+The project provides an end-to-end workflow for:
+- model training
+- secondary structure prediction
+- alignment-based prediction
+- optional probability output
+- post-processing of predictions
+
+The program automatically decides whether to run in training or prediction mode based on the provided command-line arguments.
+
+---
 
 ## Features
 
-- Implementation of the GOR IV algorithm
+- GOR IV-based secondary structure prediction
 - Model training from labeled protein sequence data
-- Secondary structure prediction from FASTA sequences
-- Prediction from multiple sequence alignments (alignment-based extension)
-- k-fold cross-validation support (project-level)
-- Optional probability output for helix (H), sheet (E), and coil (C)
-- Post-processing to remove short, unlikely structural segments
+- Prediction from FASTA sequences
+- Alignment-based prediction from multiple sequence alignments
+- Optional probability/confidence output
+- Post-processing to remove unlikely short secondary structure segments
+
+---
+
+## Tech Stack
+
+- Java
+- SQL / MySQL
+- HTML
+- Git
+
+---
 
 ## Input Formats
 
-### Training Data (Seclib format)
+### Training Data (Seclib Format)
+
+Training data must follow the format:
 
 ```text
 >protein_id
@@ -23,56 +45,164 @@ AS AMINOACIDSEQUENCE
 SS SECONDARYSTRUCTURE
 ```
 
-### Prediction input (FASTA)
+Example:
+
+```text
+>1ABC
+AS MVLSPADKTNVKAAWGKVGAHAGEYGAEALERMF
+SS CCCCCCHHHHHHHHHHHCCCCCCEEEECCCCCCC
+```
+
+---
+
+### FASTA Input
 
 ```text
 >protein_id
 AMINOACIDSEQUENCE
 ```
 
+Example:
+
+```text
+>ExampleProtein
+MVLSPADKTNVKAAWGKVGAHAGEYGAEALERMF
+```
+
+---
+
 ### Multiple Alignment Input
 
-- supported file extensions:
-  .aln
-  .ma
-  .maf
+Alignment files must contain:
+- one target sequence
+- homologous aligned sequences
+
+Supported file extensions:
+- `.aln`
+- `.ma`
+- `.maf`
+
+Example:
+
+```text
+>TargetProtein
+AS MVLSPADKTNVKAAWGKVGAHAGEYGAEALERMF
+1 MVLSPADKTNIKAAWGKVGAHAGEYGAEALERMF
+2 MVLSPADKTNVKAAWGKVGPHAGEYGAEALERMF
+```
+
+---
 
 ## Usage
-The program uses the provided command-line arguments to decide whether to run in training or prediction mode.
 
-- If `--db` is provided, the program runs in training mode.
-- Otherwise, the program runs in prediction mode.
-- Prediction requires exactly one of `--seq` or `--maf`.
+The program switches between training and prediction mode automatically:
+
+- If `--db` is provided → training mode
+- Otherwise → prediction mode
+
+Prediction mode requires exactly one of:
+- `--seq`
+- `--maf`
+
+---
+
+## Training
 
 ### Train a Model
+
 ```bash
-java -jar gor4.jar --db <seclib-file> --method gor4 --model <model-file>
+java -jar gor4.jar --db <seclib-file> --method <gor1|gor3|gor4> --model <model-file>
 ```
+
+Example:
+
+```bash
+java -jar gor4.jar --db data/train.db --method gor4 --model models/gor4.model
+```
+
+### Required Arguments
+
+| Argument | Description |
+|---|---|
+| `--db` | Path to training database |
+| `--model` | Output model file |
+
+---
+
+## Prediction
+
 ### Predict from FASTA
+
 ```bash
 java -jar gor4.jar --model <model-file> --format txt --seq <fasta-file>
 ```
 
+Example:
+
+```bash
+java -jar gor4.jar --model models/gor4.model --format txt --seq data/example.fasta
+```
+
+---
+
 ### Predict from Multiple Alignments
+
 ```bash
 java -jar gor4.jar --model <model-file> --format txt --maf <alignment-folder>
 ```
 
+Example:
+
+```bash
+java -jar gor4.jar --model models/gor4.model --format txt --maf data/maf/
+```
+
+---
+
 ### Enable Probability Output
+
 ```bash
 java -jar gor4.jar --probabilities --model <model-file> --format txt --seq data/example.fasta
 ```
 
+---
+
+### Prediction Arguments
+
+| Argument | Description |
+|---|---|
+| `--model` | Path to trained model |
+| `--format` | Output format (`txt` or `html`) |
+| `--seq` | FASTA input file |
+| `--maf` | Folder containing multiple alignment files |
+| `--probabilities` | Enables probability output |
+
+---
+
 ## Output Format
 
-### Standard Ouput
+### Standard Output
+
 ```text
 >protein_id
 AS AMINOACIDSEQUENCE
 PS PREDICTEDSTRUCTURE
 ```
 
-### With probability output enabled:
+Example:
+
+```text
+>ExampleProtein
+AS MVLSPADKTNVKAAWGKVGAHAGEYGAEALERMF
+PS CCCCCCHHHHHHHHHHHCCCCCCEEEECCCCCCC
+```
+
+---
+
+### Probability Output
+
+When `--probabilities` is enabled:
+
 ```text
 >protein_id
 AS AMINOACIDSEQUENCE
@@ -81,8 +211,23 @@ PH HELIX_PROBABILITIES
 PE SHEET_PROBABILITIES
 PC COIL_PROBABILITIES
 ```
-Probability values are scaled from 0 to 9
-Higher values indicate higher confidence
+
+Example:
+
+```text
+>ExampleProtein
+AS MVLSPADKTNVKAAWGKVGAHAGEYGAEALERMF
+PS CCCCCCHHHHHHHHHHHCCCCCCEEEECCCCCCC
+PH 0001236789987654321000000000000000
+PE 0000000000000000012345678999999999
+PC 9998763210000000009876543211111111
+```
+
+Probability values are scaled from `0` to `9`:
+- `0` = low confidence
+- `9` = high confidence
+
+---
 
 ## How It Works
 
@@ -94,7 +239,11 @@ Higher values indicate higher confidence
 
 ### Prediction
 
-- Computes log-odds scores for each structure class: coil (C), sheet (E), and helix (H)
+- Uses a sliding window of 17 amino acids
+- Computes log-odds scores for:
+  - coil (`C`)
+  - sheet (`E`)
+  - helix (`H`)
 - Assigns the most probable structure class to each residue
 
 ### Alignment-Based Prediction
@@ -109,8 +258,16 @@ Higher values indicate higher confidence
 - Removes isolated predictions
 - Smooths local inconsistencies
 
+---
+
 ## Notes
 
 - Window size: 17 amino acids
 - Sequence edges are marked with `-` because the full prediction window is not available
 - Only `txt` output is fully supported
+- The `html` output flag exists but may not be fully implemented
+- Alignment-based prediction ignores gaps and unknown amino acids
+- Developed as part of the *Programming Praktikum Bioinformatics* course
+
+---
+
