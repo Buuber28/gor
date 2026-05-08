@@ -6,7 +6,6 @@ The project provides an end-to-end workflow for:
 - model training
 - secondary structure prediction
 - alignment-based prediction
-- optional probability output
 - post-processing of predictions
 
 The program automatically decides whether to run in training or prediction mode based on the provided command-line arguments.
@@ -22,16 +21,7 @@ The program automatically decides whether to run in training or prediction mode 
 - Optional probability/confidence output
 - Post-processing to remove unlikely short secondary structure segments
 
----
-
-## Tech Stack
-
-- Java
-- SQL / MySQL
-- HTML
-- Git
-
----
+--
 
 ## Input Formats
 
@@ -265,9 +255,6 @@ Probability values are scaled from `0` to `9`:
 - Window size: 17 amino acids
 - Sequence edges are marked with `-` because the full prediction window is not available
 - Only `txt` output is fully supported
-- The `html` output flag exists but may not be fully implemented
-- Alignment-based prediction ignores gaps and unknown amino acids
-- Developed as part of the *Programming Praktikum Bioinformatics* course
 
 ---
 
